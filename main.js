@@ -81,6 +81,17 @@ const server = http.createServer(async (req, res) => {
         await fs.writeFile(file, body);
         return send(res, 201, 'Created');
       }
+            case 'DELETE': {
+        try {
+          await fs.unlink(file);
+        } catch (err) {
+          if (err.code === 'ENOENT') {
+            return send(res, 404, `Картинки для коду ${code} немає в кеші`);
+          }
+          throw err;
+        }
+        return send(res, 200, 'Deleted');
+      }
     }
   } catch (err) {
     console.error(err);
