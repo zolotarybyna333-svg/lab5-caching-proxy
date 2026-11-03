@@ -67,6 +67,20 @@ const server = http.createServer(async (req, res) => {
         await fs.writeFile(file, image);
         return sendImage(res, 200, image, 'MISS');
       }
+            case 'PUT': {
+        const chunks = [];
+        for await (const chunk of req) {
+          chunks.push(chunk);
+        }
+        const body = Buffer.concat(chunks);
+
+        if (body.length === 0) {
+          return send(res, 400, 'Порожнє тіло запиту');
+        }
+
+        await fs.writeFile(file, body);
+        return send(res, 201, 'Created');
+      }
     }
   } catch (err) {
     console.error(err);
