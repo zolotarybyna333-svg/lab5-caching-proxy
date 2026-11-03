@@ -47,7 +47,26 @@ const server = http.createServer(async (req, res) => {
     const file = path.join(cacheDir, `${code}.jpg`);
 
     switch (req.method) {
-      // GET, PUT, DELETE додамо далі
+            case 'GET': {
+        try {
+          const cached = await fs.readFile(file);
+          return sendImage(res, 200, cached, 'HIT');
+        } catch (err) {
+          if (err.code !== 'ENOENT') throw err; 
+        }
+        let image;
+        try {
+          const response = await superagent
+            .get(`https://http.cat/${code}`)
+            .buffer(true)
+            .parse(superagent.parse.image);       
+          image = response.body;
+        } catch (err) {
+          return send(res, 404, `Картинку для коду ${code} не знайдено`);
+        }
+        await fs.writeFile(file, image);
+        return sendImage(res, 200, image, 'MISS');
+      }
     }
   } catch (err) {
     console.error(err);
